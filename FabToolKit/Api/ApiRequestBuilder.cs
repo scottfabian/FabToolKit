@@ -76,11 +76,6 @@ public class ApiRequestBuilder
         return this;
     }
 
-    public ApiRequestBuilder AddApiKeyQueryParameter(string apiKey)
-    {
-        return AddQueryParameter("apiKey", apiKey);
-    }
-
     public async Task<HttpResponseMessage> GetAsync()
     {
         Request.Method = HttpMethod.Get;
