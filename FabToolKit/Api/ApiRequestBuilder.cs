@@ -4,41 +4,75 @@
 public class ApiRequestBuilder
 {
     private readonly ApiServiceBase apiClient;
-    private readonly HttpRequestMessage request;
+    public readonly HttpRequestMessage Request;
+    public Dictionary<string, string> Headers;
+    public Dictionary<string, string> Parameters;
+    public string FullRequestURI
+    {
+        get
+        {
+            if (this.Request.RequestUri is not null)
+            {
+                return this.Request.RequestUri.ToString();
+            }
+            return "Uri Null";
+        }
+    }
 
     public ApiRequestBuilder(ApiServiceBase apiClient, string endpoint)
     {
         this.apiClient = apiClient;
-        this.request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.baseUrl}{endpoint}") };
+        this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.baseUrl}{endpoint}") };
+        this.Headers = new();
+        this.Parameters = new();
     }
 
     public ApiRequestBuilder AddQueryParameter(string key, string value)
     {
-        var uriBuilder = new UriBuilder(request.RequestUri!);
+        //add query param to member dict
+        this.Parameters.Add(key, value);
+
+        //add query param to uri
+        var uriBuilder = new UriBuilder(Request.RequestUri!);
         var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
         query[key] = value;
         uriBuilder.Query = query.ToString();
-        request.RequestUri = uriBuilder.Uri;
+        Request.RequestUri = uriBuilder.Uri;
         return this;
     }
 
     public ApiRequestBuilder InjectQueryParameter(string key, string value)
     {
-        string originalUri = request.RequestUri!.ToString();
+        string originalUri = Request.RequestUri!.ToString();
         string modifiedUri = originalUri.Replace($"{{{key}}}", value);
-        request.RequestUri = new Uri(modifiedUri);
+        Request.RequestUri = new Uri(modifiedUri);
         return this;
     }
 
     public ApiRequestBuilder AddRequestHeader(string headerName, string headerValue)
     {
+
+
         //remove the header if it already exists
-        if (this.request.Headers.Contains(headerName))
+
+        //member dict
+        if (this.Headers.ContainsKey(headerName))
         {
-            this.request.Headers.Remove(headerName);
+            this.Headers.Remove(headerName);
         }
 
-        this.request.Headers.Add(headerName, headerValue);
+        //request
+        if (this.Request.Headers.Contains(headerName))
+        {
+            this.Request.Headers.Remove(headerName);
+        }
+
+
+        //add to member dict
+        this.Headers.Add(headerName, headerValue);
+
+        //add to request
+        this.Request.Headers.Add(headerName, headerValue);
         return this;
     }
 
@@ -49,26 +83,31 @@ public class ApiRequestBuilder
 
     public async Task<HttpResponseMessage> GetAsync()
     {
-        request.Method = HttpMethod.Get;
-        return await apiClient.ExecuteRequestAsync(request);
+        Request.Method = HttpMethod.Get;
+        return await apiClient.ExecuteRequestAsync(Request);
     }
 
     public async Task<string> GetContentAsync()
     {
-        request.Method = HttpMethod.Get;
-        return await apiClient.ExecuteRequestReturnContentAsync(request);
+        Request.Method = HttpMethod.Get;
+        return await apiClient.ExecuteRequestReturnContentAsync(Request);
     }
 
     public async Task<HttpResponseMessage> PostAsync()
     {
-        request.Method = HttpMethod.Post;
-        return await apiClient.ExecuteRequestAsync(request);
+        Request.Method = HttpMethod.Post;
+        return await apiClient.ExecuteRequestAsync(Request);
     }
 
     public async Task<string> PostContentAsync(string requestBody)
     {
-        request.Method = HttpMethod.Post;
-        request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-        return await apiClient.ExecuteRequestReturnContentAsync(request);
+        Request.Method = HttpMethod.Post;
+        Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
+        return await apiClient.ExecuteRequestReturnContentAsync(Request);
+    }
+
+    public string GetFullURI()
+    {
+        return this.Request.RequestUri!.ToString();
     }
 }

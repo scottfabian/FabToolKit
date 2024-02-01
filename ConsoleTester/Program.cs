@@ -16,10 +16,18 @@ internal class Program
 
         var client = new ApiServiceBase(baseUrl, httpClient, vendorKey, userKey);
 
-        var response = await client.SetEndpoint("/packages/v2/{id}")
-                                .InjectQueryParameter("id", packageID)
-                                .AddQueryParameter("licenseNumber", facilityLicense)
-                                .GetAsync();
+        var request = client.SetEndpoint("/items/v2/{id}")
+                                .InjectQueryParameter("id", "91201")
+                                .AddQueryParameter("licenseNumber", "AU-G-EX-000001");
+
+        string fullUri = request.GetFullURI();
+
+        var response = request.GetAsync().GetAwaiter().GetResult();
+
+        //var response = await client.SetEndpoint("/packages/v2/{id}")
+        //                        .InjectQueryParameter("id", packageID)
+        //                        .AddQueryParameter("licenseNumber", facilityLicense)
+        //                        .GetAsync();
         //string apiKey = "2f6ddb4f3f2408db0a75bdfb0ec58b45";
         //double lat = 42.963292;
         //double lng = -87.993814;
