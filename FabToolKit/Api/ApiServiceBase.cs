@@ -2,7 +2,7 @@
 
 public class ApiServiceBase
 {
-    internal readonly string baseUrl;
+    public readonly string BaseURL;
     private readonly HttpClient httpClient;
     internal readonly string? basicAuthenticationKey;
     internal readonly string? basicAuthenticationSecret;
@@ -12,19 +12,19 @@ public class ApiServiceBase
 
     public ApiServiceBase(string baseUrl)
     {
-        this.baseUrl = baseUrl;
+        this.BaseURL = baseUrl;
         this.httpClient = new HttpClient();
     }
 
     public ApiServiceBase(string baseUrl, HttpClient httpClient)
     {
-        this.baseUrl = baseUrl;
+        this.BaseURL = baseUrl;
         this.httpClient = httpClient;
     }
 
     public ApiServiceBase(string baseUrl, string basicAuthenticationKey, string basicAuthenticationSecret)
     {
-        this.baseUrl = baseUrl;
+        this.BaseURL = baseUrl;
         this.basicAuthenticationKey = basicAuthenticationKey;
         this.basicAuthenticationSecret = basicAuthenticationSecret;
         this.httpClient = new();
@@ -33,7 +33,7 @@ public class ApiServiceBase
 
     public ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret)
     {
-        this.baseUrl = baseUrl;
+        this.BaseURL = baseUrl;
         this.basicAuthenticationKey = basicAuthenticationKey;
         this.basicAuthenticationSecret = basicAuthenticationSecret;
         this.httpClient = httpClient;

@@ -5,8 +5,8 @@ public class ApiRequestBuilder
 {
     private readonly ApiServiceBase apiClient;
     public readonly HttpRequestMessage Request;
-    public Dictionary<string, string> Headers;
-    public Dictionary<string, string> Parameters;
+    public readonly Dictionary<string, string> Headers;
+    public readonly Dictionary<string, string> Parameters;
     public string FullRequestURI
     {
         get
@@ -22,7 +22,7 @@ public class ApiRequestBuilder
     public ApiRequestBuilder(ApiServiceBase apiClient, string endpoint)
     {
         this.apiClient = apiClient;
-        this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.baseUrl}{endpoint}") };
+        this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.BaseURL}{endpoint}") };
         this.Headers = new();
         this.Parameters = new();
     }
@@ -99,10 +99,5 @@ public class ApiRequestBuilder
         Request.Method = HttpMethod.Post;
         Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
         return await apiClient.ExecuteRequestReturnContentAsync(Request);
-    }
-
-    public string GetFullURI()
-    {
-        return this.Request.RequestUri!.ToString();
     }
 }
