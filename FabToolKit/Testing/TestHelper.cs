@@ -4,7 +4,7 @@ namespace FabToolKit.Testing;
 
 public static class TestHelper
 {
-    public static bool AreObjectsEqualValue<T>(T obj1, T obj2)
+    public static bool AreObjectsValuesEquals<T>(T obj1, T obj2)
     {
         // If both objects are null, or they are the same instance, return true
         if (Object.ReferenceEquals(obj1, obj2))
@@ -40,7 +40,7 @@ public static class TestHelper
             // If the property type is a class and not a primitive type, call this method recursively
             if (property.PropertyType.IsClass && !property.PropertyType.Equals(typeof(string)))
             {
-                if (!AreObjectsEqual(obj1Value, obj2Value))
+                if (!AreObjectsValuesEquals(obj1Value, obj2Value))
                 {
                     return false;
                 }

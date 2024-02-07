@@ -6,7 +6,9 @@ public class ApiRequestBuilder
     private readonly ApiServiceBase apiClient;
     public readonly HttpRequestMessage Request;
     public readonly Dictionary<string, string> Headers;
-    public readonly Dictionary<string, string> Parameters;
+    public readonly Dictionary<string, string> QueryParameters;
+    public readonly Dictionary<string, string> InjectedParameters;
+
     public string FullRequestURI
     {
         get
@@ -24,13 +26,13 @@ public class ApiRequestBuilder
         this.apiClient = apiClient;
         this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.BaseURL}{endpoint}") };
         this.Headers = new();
-        this.Parameters = new();
+        this.QueryParameters = new();
     }
 
     public ApiRequestBuilder AddQueryParameter(string key, string value)
     {
         //add query param to member dict
-        this.Parameters.Add(key, value);
+        this.QueryParameters[key] = value;
 
         //add query param to uri
         var uriBuilder = new UriBuilder(Request.RequestUri!);
@@ -44,8 +46,23 @@ public class ApiRequestBuilder
     public ApiRequestBuilder InjectQueryParameter(string key, string value)
     {
         string originalUri = Request.RequestUri!.ToString();
-        string modifiedUri = originalUri.Replace($"{{{key}}}", value);
-        Request.RequestUri = new Uri(modifiedUri);
+
+        if (originalUri.Contains(key))
+        {
+            string modifiedUri = originalUri.Replace($"{{{key}}}", value);
+            this.InjectedParameters[key] = value;
+            Request.RequestUri = new Uri(modifiedUri);
+        }
+        
+        return this;
+    }
+
+    public ApiRequestBuilder InjectQueryParameter(Dictionary<string, string> parameters)
+    {
+        foreach (var kvp in parameters)
+        {
+            this.InjectQueryParameter(kvp.Key, kvp.Value);
+        }
         return this;
     }
 
@@ -69,7 +86,7 @@ public class ApiRequestBuilder
 
 
         //add to member dict
-        this.Headers.Add(headerName, headerValue);
+        this.Headers[headerName] = headerValue;
 
         //add to request
         this.Request.Headers.Add(headerName, headerValue);
