@@ -5,9 +5,9 @@ public class ApiRequestBuilder
 {
     private readonly ApiServiceBase apiClient;
     public readonly HttpRequestMessage Request;
-    public readonly Dictionary<string, string> Headers;
-    public readonly Dictionary<string, string> QueryParameters;
-    public readonly Dictionary<string, string> InjectedParameters;
+    public readonly Dictionary<string, string> Headers = new();
+    public readonly Dictionary<string, string> QueryParameters = new();
+    public readonly Dictionary<string, string> InjectedParameters = new();
 
     public string FullRequestURI
     {
@@ -25,8 +25,6 @@ public class ApiRequestBuilder
     {
         this.apiClient = apiClient;
         this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.BaseURL}{endpoint}") };
-        this.Headers = new();
-        this.QueryParameters = new();
     }
 
     public ApiRequestBuilder AddQueryParameter(string key, string value)

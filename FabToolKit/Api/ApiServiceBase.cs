@@ -1,44 +1,43 @@
 ﻿namespace FabToolKit.Api;
 
-public class ApiServiceBase
+public abstract class ApiServiceBase
 {
     public readonly string BaseURL;
-    private readonly HttpClient httpClient;
-    internal readonly string? basicAuthenticationKey;
-    internal readonly string? basicAuthenticationSecret;
+    private readonly HttpClient _httpClient;
+    private readonly string? _basicAuthenticationKey;
+    private readonly string? _basicAuthenticationSecret;
 
 
     #region Ctors
 
-    public ApiServiceBase(string baseUrl)
+    protected ApiServiceBase(string baseUrl)
     {
         this.BaseURL = baseUrl;
-        this.httpClient = new HttpClient();
+        this._httpClient = new HttpClient();
     }
 
-    public ApiServiceBase(string baseUrl, HttpClient httpClient)
+    protected ApiServiceBase(string baseUrl, HttpClient httpClient)
     {
         this.BaseURL = baseUrl;
-        this.httpClient = httpClient;
+        this._httpClient = httpClient;
     }
 
-    public ApiServiceBase(string baseUrl, string basicAuthenticationKey, string basicAuthenticationSecret)
+    protected ApiServiceBase(string baseUrl, string basicAuthenticationKey, string basicAuthenticationSecret)
     {
         this.BaseURL = baseUrl;
-        this.basicAuthenticationKey = basicAuthenticationKey;
-        this.basicAuthenticationSecret = basicAuthenticationSecret;
-        this.httpClient = new();
+        this._basicAuthenticationKey = basicAuthenticationKey;
+        this._basicAuthenticationSecret = basicAuthenticationSecret;
+        this._httpClient = new();
         SetBasicAuthenticationHeader();
     }
 
-    public ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret)
+    protected ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret) 
+                        : this(baseUrl, basicAuthenticationKey, basicAuthenticationSecret)
     {
-        this.BaseURL = baseUrl;
-        this.basicAuthenticationKey = basicAuthenticationKey;
-        this.basicAuthenticationSecret = basicAuthenticationSecret;
-        this.httpClient = httpClient;
-        SetBasicAuthenticationHeader();
+        this._httpClient = httpClient;
     }
+
+    
 
     #endregion Ctors
 
@@ -48,8 +47,9 @@ public class ApiServiceBase
     private void SetBasicAuthenticationHeader()
     {
         var credentials = Convert.ToBase64String(
-            System.Text.Encoding.ASCII.GetBytes($"{basicAuthenticationKey}:{basicAuthenticationSecret}"));
-        httpClient.DefaultRequestHeaders.Authorization =
+            System.Text.Encoding.ASCII.GetBytes($"{_basicAuthenticationKey}:{_basicAuthenticationSecret}"));
+
+        _httpClient.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
     }
 
@@ -62,14 +62,14 @@ public class ApiServiceBase
 
     public async Task<string> ExecuteRequestReturnContentAsync(HttpRequestMessage request)
     {
-        HttpResponseMessage response = await httpClient.SendAsync(request);
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
     }
 
     public async Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request)
     {
-        return await httpClient.SendAsync(request);
+        return await _httpClient.SendAsync(request);
     }
 
 }
