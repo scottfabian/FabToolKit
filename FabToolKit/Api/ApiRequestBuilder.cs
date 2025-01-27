@@ -8,7 +8,7 @@ public class ApiRequestBuilder
     public readonly Dictionary<string, string> Headers = new();
     public readonly Dictionary<string, string> QueryParameters = new();
     public readonly Dictionary<string, string> InjectedParameters = new();
-    public readonly string EndpointPath;
+    public string EndpointPath { get; private set; }
 
     public string FullRequestURI
     {
@@ -53,7 +53,12 @@ public class ApiRequestBuilder
             this.InjectedParameters[key] = value;
             Request.RequestUri = new Uri(modifiedUri);
         }
-        
+
+        if (EndpointPath.Contains(key))
+        {
+            this.EndpointPath = EndpointPath.Replace($"{{{key}}}", value);
+        }
+
         return this;
     }
 
