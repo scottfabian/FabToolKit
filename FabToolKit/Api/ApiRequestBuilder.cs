@@ -3,11 +3,12 @@
 
 public class ApiRequestBuilder
 {
-    private readonly ApiServiceBase apiClient;
+    private readonly ApiServiceBase _apiClient;
     public readonly HttpRequestMessage Request;
     public readonly Dictionary<string, string> Headers = new();
     public readonly Dictionary<string, string> QueryParameters = new();
     public readonly Dictionary<string, string> InjectedParameters = new();
+    public readonly string EndpointPath;
 
     public string FullRequestURI
     {
@@ -23,7 +24,8 @@ public class ApiRequestBuilder
 
     public ApiRequestBuilder(ApiServiceBase apiClient, string endpoint)
     {
-        this.apiClient = apiClient;
+        this._apiClient = apiClient;
+        this.EndpointPath = endpoint;
         this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.BaseURL}{endpoint}") };
     }
 
@@ -94,25 +96,25 @@ public class ApiRequestBuilder
     public async Task<HttpResponseMessage> GetAsync()
     {
         Request.Method = HttpMethod.Get;
-        return await apiClient.ExecuteRequestAsync(Request);
+        return await _apiClient.ExecuteRequestAsync(Request);
     }
 
     public async Task<string> GetContentAsync()
     {
         Request.Method = HttpMethod.Get;
-        return await apiClient.ExecuteRequestReturnContentAsync(Request);
+        return await _apiClient.ExecuteRequestReturnContentAsync(Request);
     }
 
     public async Task<HttpResponseMessage> PostAsync()
     {
         Request.Method = HttpMethod.Post;
-        return await apiClient.ExecuteRequestAsync(Request);
+        return await _apiClient.ExecuteRequestAsync(Request);
     }
 
     public async Task<string> PostContentAsync(string requestBody)
     {
         Request.Method = HttpMethod.Post;
         Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-        return await apiClient.ExecuteRequestReturnContentAsync(Request);
+        return await _apiClient.ExecuteRequestReturnContentAsync(Request);
     }
 }
