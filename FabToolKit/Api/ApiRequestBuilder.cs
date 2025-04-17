@@ -98,7 +98,7 @@ public class ApiRequestBuilder
         return this;
     }
 
-    public async Task<HttpResponseMessage> GetAsync()
+    public async Task<HttpResponseMessage> GetResponseBodyAsync()
     {
         Request.Method = HttpMethod.Get;
         return await _apiClient.ExecuteRequestAsync(Request);
@@ -107,7 +107,13 @@ public class ApiRequestBuilder
     public async Task<string> GetContentAsync()
     {
         Request.Method = HttpMethod.Get;
-        return await _apiClient.ExecuteRequestReturnContentAsync(Request);
+        return await _apiClient.ExecuteRequestReturnStringContentAsync(Request);
+    }
+
+    public async Task<byte[]> GetByteArrayAsync()
+    {
+        Request.Method = HttpMethod.Get;
+        return await _apiClient.ExecuteRequestReturnByteArrayAsync(Request);
     }
 
     public async Task<HttpResponseMessage> PostAsync()
@@ -120,6 +126,6 @@ public class ApiRequestBuilder
     {
         Request.Method = HttpMethod.Post;
         Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-        return await _apiClient.ExecuteRequestReturnContentAsync(Request);
+        return await _apiClient.ExecuteRequestReturnStringContentAsync(Request);
     }
 }

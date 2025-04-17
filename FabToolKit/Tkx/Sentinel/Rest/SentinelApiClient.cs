@@ -23,12 +23,21 @@ public class SentinelApiClient : ApiServiceBase
     }
 
 
-    public async Task<string> PostJob(PostJobDTO[] jobDTO)
+    public async Task<string> PostJobAsync(PostJobDTO[] jobDTO)
     {
         ApiRequestBuilder request = SetEndpoint(SentinelEndpoints.PostJob);
 
         string payload = JsonSerializer.Serialize(jobDTO, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull});
 
         return await request.PostContentAsync(payload);
+    }
+
+    public async Task<byte[]> GetFileFromJobAsync(int jobNumber, string fileName)
+    {
+        ApiRequestBuilder request = SetEndpoint(SentinelEndpoints.DownloadFileFromJob)
+                                        .InjectQueryParameter("jobId", jobNumber.ToString())
+                                        .InjectQueryParameter("filename", fileName);
+
+        return await request.GetByteArrayAsync();
     }
 }

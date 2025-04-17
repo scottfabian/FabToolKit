@@ -60,11 +60,18 @@ public abstract class ApiServiceBase
         return new ApiRequestBuilder(this, endpoint);
     }
 
-    public async Task<string> ExecuteRequestReturnContentAsync(HttpRequestMessage request)
+    public async Task<string> ExecuteRequestReturnStringContentAsync(HttpRequestMessage request)
     {
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
+    }
+
+    public async Task<byte[]> ExecuteRequestReturnByteArrayAsync(HttpRequestMessage request)
+    {
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync();
     }
 
     public async Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request)
