@@ -35,6 +35,7 @@ public abstract class ApiServiceBase
                         : this(baseUrl, basicAuthenticationKey, basicAuthenticationSecret)
     {
         this._httpClient = httpClient;
+        SetBasicAuthenticationHeader();
     }
 
     

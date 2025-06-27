@@ -98,7 +98,7 @@ public class ApiRequestBuilder
         return this;
     }
 
-    public async Task<HttpResponseMessage> GetResponseBodyAsync()
+    public async Task<HttpResponseMessage> GetAsync()
     {
         Request.Method = HttpMethod.Get;
         return await _apiClient.ExecuteRequestAsync(Request);
