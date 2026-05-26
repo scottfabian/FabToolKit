@@ -53,6 +53,7 @@ public abstract class ApiServiceBase
 
     public async Task<string> ExecuteRequestReturnStringContentAsync(HttpRequestMessage request)
     {
+        if (_authConfig != null) await _authConfig.PrepareAsync(_httpClient.DefaultRequestHeaders);
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStringAsync();
@@ -60,6 +61,7 @@ public abstract class ApiServiceBase
 
     public async Task<byte[]> ExecuteRequestReturnByteArrayAsync(HttpRequestMessage request)
     {
+        if (_authConfig != null) await _authConfig.PrepareAsync(_httpClient.DefaultRequestHeaders);
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsByteArrayAsync();
@@ -67,6 +69,7 @@ public abstract class ApiServiceBase
 
     public async Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request)
     {
+        if (_authConfig != null) await _authConfig.PrepareAsync(_httpClient.DefaultRequestHeaders);
         return await _httpClient.SendAsync(request);
     }
 
