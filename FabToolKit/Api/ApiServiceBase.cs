@@ -1,91 +1,50 @@
-﻿namespace FabToolKit.Api;
+namespace FabToolKit.Api;
 
 public abstract class ApiServiceBase
 {
     public readonly string BaseURL;
     private readonly HttpClient _httpClient;
-    private readonly enumAuthType _authType;
-    private readonly string? _basicAuthenticationKey;
-    private readonly string? _basicAuthenticationSecret;
-    private string? _bearerToken;
+    private ApiAuthConfig? _authConfig;
 
 
     #region Ctors
 
-    protected ApiServiceBase(string baseUrl)
+    protected ApiServiceBase(string baseUrl, ApiAuthConfig? auth = null)
     {
-        this.BaseURL = baseUrl;
-        this._httpClient = new HttpClient();
+        BaseURL = baseUrl;
+        _httpClient = new HttpClient();
+        _authConfig = auth;
+        auth?.Apply(_httpClient.DefaultRequestHeaders);
     }
 
-    protected ApiServiceBase(string baseUrl, HttpClient httpClient)
+    protected ApiServiceBase(string baseUrl, HttpClient httpClient, ApiAuthConfig? auth = null)
     {
-        this.BaseURL = baseUrl;
-        this._httpClient = httpClient;
+        BaseURL = baseUrl;
+        _httpClient = httpClient;
+        _authConfig = auth;
+        auth?.Apply(_httpClient.DefaultRequestHeaders);
     }
-
-    protected ApiServiceBase(string baseUrl, string basicAuthenticationKey, string basicAuthenticationSecret)
-    {
-        this.BaseURL = baseUrl;
-        this._basicAuthenticationKey = basicAuthenticationKey;
-        this._basicAuthenticationSecret = basicAuthenticationSecret;
-        this._httpClient = new();
-        SetBasicAuthenticationHeader();
-    }
-
-    protected ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret)
-    : this(baseUrl, httpClient)
-    {
-        this._basicAuthenticationKey = basicAuthenticationKey;
-        this._basicAuthenticationSecret = basicAuthenticationSecret;
-        SetBasicAuthenticationHeader();
-    }
-
-
-    protected ApiServiceBase(string baseUrl, string bearerToken, HttpClient? httpClient = null, enumAuthType authType = enumAuthType.Bearer)
-    {
-        this.BaseURL = baseUrl;
-        this._bearerToken = bearerToken;
-        this._httpClient = httpClient ?? new HttpClient();
-        this._authType = authType;
-        SetBearerTokenHeader();
-    }
-
-
 
     #endregion Ctors
 
 
     #region AuthenticationManagement
 
-    
-
-    // Private method to set the basic authentication header
-    private protected void SetBasicAuthenticationHeader()
+    public void UpdateBearerToken(string newToken)
     {
-        var credentials = Convert.ToBase64String(
-            System.Text.Encoding.UTF8.GetBytes($"{_basicAuthenticationKey}:{_basicAuthenticationSecret}"));
-
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
-    }
-
-    private void SetBearerTokenHeader()
-    {
-        if (!string.IsNullOrWhiteSpace(_bearerToken))
+        if (_authConfig is BearerAuthConfig bearer)
         {
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _bearerToken);
+            bearer.UpdateToken(newToken);
+            bearer.Apply(_httpClient.DefaultRequestHeaders);
+        }
+        else
+        {
+            throw new InvalidOperationException("UpdateBearerToken requires the service to be configured with BearerAuthConfig.");
         }
     }
 
-    public void UpdateBearerToken(string newBearerToken)
-    {
-        _bearerToken = newBearerToken;
-        SetBearerTokenHeader();
-    }
-
     #endregion AuthenticationManagement
+
 
     public ApiRequestBuilder SetEndpoint(string endpoint)
     {

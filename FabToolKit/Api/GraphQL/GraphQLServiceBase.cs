@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FabToolKit.Api.GraphQL;
@@ -11,22 +11,14 @@ public class GraphQLServiceBase : ApiServiceBase
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public GraphQLServiceBase(string baseUrl, string graphEndpoint) : base(baseUrl)
+    public GraphQLServiceBase(string baseUrl, string graphEndpoint, ApiAuthConfig? auth = null)
+        : base(baseUrl, auth)
     {
         GraphEndpoint = graphEndpoint;
     }
 
-    public GraphQLServiceBase(string baseUrl, string graphEndpoint, HttpClient httpClient) : base(baseUrl, httpClient)
-    {
-        GraphEndpoint = graphEndpoint;
-    }
-
-    public GraphQLServiceBase(string baseUrl, string graphEndpoint, string basicAuthenticationKey, string basicAuthenticationSecret) : base(baseUrl, basicAuthenticationKey, basicAuthenticationSecret)
-    {
-        GraphEndpoint = graphEndpoint;
-    }
-
-    public GraphQLServiceBase(string baseUrl, string graphEndpoint, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret) : base(baseUrl, httpClient, basicAuthenticationKey, basicAuthenticationSecret)
+    public GraphQLServiceBase(string baseUrl, string graphEndpoint, HttpClient httpClient, ApiAuthConfig? auth = null)
+        : base(baseUrl, httpClient, auth)
     {
         GraphEndpoint = graphEndpoint;
     }
@@ -34,9 +26,9 @@ public class GraphQLServiceBase : ApiServiceBase
     public async Task<HttpResponseMessage> SendGraphRequest(GraphQLRequestBody requestBody)
     {
         var request = SetEndpoint(GraphEndpoint);
-        
-        string requestBodyJson = JsonSerializer.Serialize(requestBody, _jsonOptions); 
-        
+
+        string requestBodyJson = JsonSerializer.Serialize(requestBody, _jsonOptions);
+
         return await request.PostAsync(requestBodyJson, ApiContentType.Json);
     }
 
