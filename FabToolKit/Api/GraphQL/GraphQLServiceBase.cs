@@ -31,19 +31,19 @@ public class GraphQLServiceBase : ApiServiceBase
         GraphEndpoint = graphEndpoint;
     }
 
-    public async Task<string> SendGraphRequest(GraphQLRequestBody requestBody)
+    public async Task<HttpResponseMessage> SendGraphRequest(GraphQLRequestBody requestBody)
     {
         var request = SetEndpoint(GraphEndpoint);
         
         string requestBodyJson = JsonSerializer.Serialize(requestBody, _jsonOptions); 
         
-        return await request.PostContentAsync(requestBodyJson);
+        return await request.PostAsync(requestBodyJson, ApiContentType.Json);
     }
 
-    public async Task<string> SendGraphRequest(ApiRequestBuilder request, GraphQLRequestBody requestBody)
+    public async Task<HttpResponseMessage> SendGraphRequest(ApiRequestBuilder request, GraphQLRequestBody requestBody)
     {
         string requestBodyJson = JsonSerializer.Serialize(requestBody, _jsonOptions);
 
-        return await request.PostContentAsync(requestBodyJson);
+        return await request.PostAsync(requestBodyJson, ApiContentType.Json);
     }
 }

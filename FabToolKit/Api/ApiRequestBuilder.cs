@@ -4,7 +4,7 @@
 public class ApiRequestBuilder
 {
     private readonly ApiServiceBase _apiClient;
-    public readonly HttpRequestMessage Request;
+    internal readonly HttpRequestMessage Request;
     public readonly Dictionary<string, string> Headers = new();
     public readonly Dictionary<string, string> QueryParameters = new();
     public readonly Dictionary<string, string> InjectedParameters = new();
@@ -29,6 +29,8 @@ public class ApiRequestBuilder
         this.Request = new HttpRequestMessage { RequestUri = new Uri($"{apiClient.BaseURL}{endpoint}") };
     }
 
+    #region RequestBuilders
+
     public ApiRequestBuilder AddQueryParameter(string key, string value)
     {
         //add query param to member dict
@@ -47,16 +49,11 @@ public class ApiRequestBuilder
     {
         string originalUri = Request.RequestUri!.ToString();
 
-        if (originalUri.Contains(key))
+        if (originalUri.Contains($"{{{key}}}"))
         {
-            string modifiedUri = originalUri.Replace($"{{{key}}}", value);
+            Request.RequestUri = new Uri(originalUri.Replace($"{{{key}}}", value));
+            EndpointPath = EndpointPath.Replace($"{{{key}}}", value);
             this.InjectedParameters[key] = value;
-            Request.RequestUri = new Uri(modifiedUri);
-        }
-
-        if (EndpointPath.Contains(key))
-        {
-            this.EndpointPath = EndpointPath.Replace($"{{{key}}}", value);
         }
 
         return this;
@@ -98,6 +95,23 @@ public class ApiRequestBuilder
         return this;
     }
 
+    #endregion RequestBuilders
+
+    #region Helpers
+
+    private async Task<HttpResponseMessage> SendRequestWithBody(string requestBody, HttpMethod verb, string contentType)
+    {
+        Request.Method = verb;
+        Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, contentType);
+        return await _apiClient.ExecuteRequestAsync(Request);
+    }
+
+    #endregion Helpers
+
+    #region HttpMethods
+
+    #region GET
+
     public async Task<HttpResponseMessage> GetAsync()
     {
         Request.Method = HttpMethod.Get;
@@ -116,16 +130,60 @@ public class ApiRequestBuilder
         return await _apiClient.ExecuteRequestReturnByteArrayAsync(Request);
     }
 
+    #endregion GET
+
+
+    #region POST
+
     public async Task<HttpResponseMessage> PostAsync()
     {
         Request.Method = HttpMethod.Post;
         return await _apiClient.ExecuteRequestAsync(Request);
     }
 
-    public async Task<string> PostContentAsync(string requestBody)
+    public async Task<HttpResponseMessage> PostAsync(string requestBody, string contentType) => await SendRequestWithBody(requestBody, HttpMethod.Post, contentType);
+
+    #endregion POST
+
+
+    #region PUT
+
+    public async Task<HttpResponseMessage> PutAsync()
     {
-        Request.Method = HttpMethod.Post;
-        Request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-        return await _apiClient.ExecuteRequestReturnStringContentAsync(Request);
+        Request.Method = HttpMethod.Put;
+        return await _apiClient.ExecuteRequestAsync(Request);
     }
+
+    public async Task<HttpResponseMessage> PutAsync(string requestBody, string contentType) => await SendRequestWithBody(requestBody, HttpMethod.Put, contentType);
+
+    #endregion PUT
+
+
+    #region PATCH
+
+    public async Task<HttpResponseMessage> PatchAsync()
+    {
+        Request.Method = HttpMethod.Patch;
+        return await _apiClient.ExecuteRequestAsync(Request);
+    }
+
+    public async Task<HttpResponseMessage> PatchAsync(string requestBody, string contentType) => await SendRequestWithBody(requestBody, HttpMethod.Patch, contentType);
+
+    #endregion PATCH
+
+
+    #region DELETE
+
+    public async Task<HttpResponseMessage> DeleteAsync()
+    {
+        Request.Method = HttpMethod.Delete;
+        return await _apiClient.ExecuteRequestAsync(Request);
+    }
+
+    public async Task<HttpResponseMessage> DeleteAsync(string requestBody, string contentType) => await SendRequestWithBody(requestBody, HttpMethod.Delete, contentType);
+
+    #endregion DELETE
+
+    #endregion HttpMethods
+  
 }

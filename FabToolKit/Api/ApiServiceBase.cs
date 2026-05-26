@@ -4,8 +4,10 @@ public abstract class ApiServiceBase
 {
     public readonly string BaseURL;
     private readonly HttpClient _httpClient;
+    private readonly enumAuthType _authType;
     private readonly string? _basicAuthenticationKey;
     private readonly string? _basicAuthenticationSecret;
+    private string? _bearerToken;
 
 
     #region Ctors
@@ -31,30 +33,59 @@ public abstract class ApiServiceBase
         SetBasicAuthenticationHeader();
     }
 
-    protected ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret) 
-                        : this(baseUrl, basicAuthenticationKey, basicAuthenticationSecret)
+    protected ApiServiceBase(string baseUrl, HttpClient httpClient, string basicAuthenticationKey, string basicAuthenticationSecret)
+    : this(baseUrl, httpClient)
     {
-        this._httpClient = httpClient;
+        this._basicAuthenticationKey = basicAuthenticationKey;
+        this._basicAuthenticationSecret = basicAuthenticationSecret;
         SetBasicAuthenticationHeader();
     }
 
-    
+
+    protected ApiServiceBase(string baseUrl, string bearerToken, HttpClient? httpClient = null, enumAuthType authType = enumAuthType.Bearer)
+    {
+        this.BaseURL = baseUrl;
+        this._bearerToken = bearerToken;
+        this._httpClient = httpClient ?? new HttpClient();
+        this._authType = authType;
+        SetBearerTokenHeader();
+    }
+
+
 
     #endregion Ctors
 
 
-    #region PrivateUtilities
+    #region AuthenticationManagement
+
+    
+
     // Private method to set the basic authentication header
-    private void SetBasicAuthenticationHeader()
+    private protected void SetBasicAuthenticationHeader()
     {
         var credentials = Convert.ToBase64String(
-            System.Text.Encoding.ASCII.GetBytes($"{_basicAuthenticationKey}:{_basicAuthenticationSecret}"));
+            System.Text.Encoding.UTF8.GetBytes($"{_basicAuthenticationKey}:{_basicAuthenticationSecret}"));
 
         _httpClient.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials);
     }
 
-    #endregion PrivateUtilities
+    private void SetBearerTokenHeader()
+    {
+        if (!string.IsNullOrWhiteSpace(_bearerToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _bearerToken);
+        }
+    }
+
+    public void UpdateBearerToken(string newBearerToken)
+    {
+        _bearerToken = newBearerToken;
+        SetBearerTokenHeader();
+    }
+
+    #endregion AuthenticationManagement
 
     public ApiRequestBuilder SetEndpoint(string endpoint)
     {

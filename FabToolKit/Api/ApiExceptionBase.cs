@@ -5,8 +5,8 @@ namespace FabToolKit.Api;
 public class ApiExceptionBase : Exception
 {
     public HttpStatusCode StatusCode { get; private set; }
-    public string Response { get; private set; }
-    public string RequestURI { get; private set; }
+    public string? Response { get; private set; }
+    public string? RequestURI { get; private set; }
 
 
     public ApiExceptionBase() : base() { }
