@@ -111,9 +111,29 @@ public class OAuth2AuthConfig : ApiAuthConfig
         public string AccessToken { get; set; } = string.Empty;
 
         [JsonPropertyName("expires_in")]
+        [JsonConverter(typeof(IntOrStringConverter))]
         public int ExpiresIn { get; set; }
 
         [JsonPropertyName("token_type")]
         public string TokenType { get; set; } = string.Empty;
+    }
+
+    // Some token endpoints (e.g. certain BC OData instances) serialize numeric fields as JSON strings.
+    private class IntOrStringConverter : JsonConverter<int>
+    {
+        public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                var s = reader.GetString();
+                if (int.TryParse(s, out var parsed))
+                    return parsed;
+                throw new JsonException($"Cannot convert \"{s}\" to int.");
+            }
+            return reader.GetInt32();
+        }
+
+        public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options) =>
+            writer.WriteNumberValue(value);
     }
 }
