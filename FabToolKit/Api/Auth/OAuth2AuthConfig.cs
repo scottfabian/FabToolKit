@@ -10,6 +10,7 @@ public class OAuth2AuthConfig : ApiAuthConfig
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly string? _scope;
+    private readonly Dictionary<string, string>? _authFormData;
     private readonly HttpClient _httpClient;
 
     private string? _accessToken;
@@ -22,13 +23,14 @@ public class OAuth2AuthConfig : ApiAuthConfig
     private readonly SemaphoreSlim _tokenLock = new(1, 1);
 
 
-    public OAuth2AuthConfig(string tokenEndpoint, string clientId, string clientSecret, string? scope = null, HttpClient? httpClient = null)
+    public OAuth2AuthConfig(string tokenEndpoint, string clientId, string clientSecret, string? scope = null, HttpClient? httpClient = null, Dictionary<string, string>? authFormData = null)
     {
         _tokenEndpoint = tokenEndpoint;
         _clientId = clientId;
         _clientSecret = clientSecret;
         _scope = scope;
         _httpClient = httpClient ?? new HttpClient();
+        _authFormData = authFormData;
     }
 
 
@@ -74,6 +76,14 @@ public class OAuth2AuthConfig : ApiAuthConfig
             ["client_secret"] = _clientSecret
         };
 
+        if (_authFormData is not null)
+        {
+            foreach (var kvp in _authFormData)
+            {
+                formData[kvp.Key] = kvp.Value;
+            }
+        }
+
         if (!string.IsNullOrEmpty(_scope))
             formData["scope"] = _scope;
 
@@ -82,7 +92,7 @@ public class OAuth2AuthConfig : ApiAuthConfig
 
         var json = await response.Content.ReadAsStringAsync();
         var token = JsonSerializer.Deserialize<OAuth2TokenResponse>(json)
-            ?? throw new InvalidOperationException("OAuth2 token endpoint returned an empty or unparseable response.");
+            ?? throw new InvalidOperationException($"OAuth2 token endpoint returned an empty or unparseable response.\n\nResponse:\n{json}");
 
         _accessToken = token.AccessToken;
         int expiresIn = token.ExpiresIn > 0 ? token.ExpiresIn : 3600;
